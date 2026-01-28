@@ -16,7 +16,7 @@ type ReceiptResponse = { orderId?: string; total?: number };
  * - Payments may be processed asynchronously (gateway callbacks, queues)
  * - Immediate GET after pay may return PENDING/PROCESSING briefly
  *
- * Design notes:
+ * Notes:
  * - Deadline-based timeout avoiding infinite loops
  * - Using small interval balances speed and API load
  */
