@@ -7,40 +7,50 @@ test.describe('UI: checkout E2E smoke', () => {
     // Login
     await page.goto('/login', { waitUntil: 'domcontentloaded' });
 
-    await expect(page.locator(selectors.login.email)).toBeVisible();
-    await page.fill(selectors.login.email, testUser.email);
-    await page.fill(selectors.login.password, testUser.password);
+    const email = page.locator(selectors.login.email);
+    const password = page.locator(selectors.login.password);
+    const submit = page.locator(selectors.login.submit);
 
-    // Click and wait for a logged-in signal
-    await Promise.all([
-      page.waitForLoadState('networkidle'),
-      page.click(selectors.login.submit)
-    ]);
+    await expect(email).toBeVisible();
+    await email.fill(testUser.email);
+    await password.fill(testUser.password);
 
-    // assert a post-login element 
-    await expect(page.locator(selectors.login.submit)).toBeHidden({ timeout: 10_000 });
+    await submit.click();
+
+    // Prefer an explicit post-login signal over networkidle
+    await expect(page).not.toHaveURL(/\/login/i, { timeout: 10_000 });
+    // If your app does not change URL on login, keep the old check but consider adding a logged-in testid:
+    // await expect(submit).toBeHidden({ timeout: 10_000 });
 
     // Add item and checkout
-    await expect(page.locator(selectors.checkout.addItem)).toBeVisible();
-    await page.click(selectors.checkout.addItem);
+    const addItem = page.locator(selectors.checkout.addItem);
+    const quantity = page.locator(selectors.checkout.quantity);
+    const checkoutButton = page.locator(selectors.checkout.checkoutButton);
 
-    await expect(page.locator(selectors.checkout.quantity)).toBeVisible();
-    await page.fill(selectors.checkout.quantity, '2');
+    await expect(addItem).toBeVisible();
+    await addItem.click();
 
-    await Promise.all([
-      page.waitForLoadState('networkidle'),
-      page.click(selectors.checkout.checkoutButton)
-    ]);
+    await expect(quantity).toBeVisible();
+    await quantity.fill('2');
+    await quantity.blur(); // helps UIs that commit on blur
+
+    await expect(checkoutButton).toBeEnabled();
+    await checkoutButton.click();
 
     // Pay (payment processing may be async)
-    await expect(page.locator(selectors.checkout.payButton)).toBeEnabled();
-    await page.click(selectors.checkout.payButton);
+    const payButton = page.locator(selectors.checkout.payButton);
+    await expect(payButton).toBeEnabled();
+    await payButton.click();
 
-    // Assert success with timeouts that reflect async payment 
-    await expect(page.locator(selectors.checkout.successMessage)).toBeVisible({ timeout: 20_000 });
-    await expect(page.locator(selectors.checkout.orderStatus)).toHaveText(/PAID/i, { timeout: 20_000 });
+    // Assert success with timeouts that reflect async payment
+    const successMessage = page.locator(selectors.checkout.successMessage);
+    const orderStatus = page.locator(selectors.checkout.orderStatus);
 
-    // Receipt link visible 
-    await expect(page.locator(selectors.checkout.receiptLink)).toBeVisible({ timeout: 10_000 });
+    await expect(successMessage).toBeVisible({ timeout: 20_000 });
+    await expect(orderStatus).toHaveText(/PAID/i, { timeout: 20_000 });
+
+    // Receipt link visible
+    const receiptLink = page.locator(selectors.checkout.receiptLink);
+    await expect(receiptLink).toBeVisible({ timeout: 10_000 });
   });
 });
