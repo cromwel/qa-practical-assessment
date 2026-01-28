@@ -4,95 +4,94 @@
 [![TypeScript](https://img.shields.io/badge/language-typescript-3178c6)](https://www.typescriptlang.org)  
 
 
-A focused QA repository that validates a simple e-commerce checkout flow:
+A focused test suite that validates a simple e-commerce checkout flow from authentication to receipt generation:
 
 Login → Create Order → Payment (Card / Mobile Money) → Status = PAID → Receipt Generated
 
-The emphasis is on risk-based test design, API-first automation, and clear trade-offs for what to automate vs. test manually.
+This repository emphasizes risk-based test design, API-first automation for speed and reliability, and a small set of UI smoke tests for end-to-end confidence.
 
 ---
 
-## Table of Contents
-
-- [Overview](#overview)  
-- [Scope](#scope)  
-  - [In scope](#in-scope)  
-  - [Out of scope](#out-of-scope)  
-- [Tech stack](#tech-stack)  
-- [Quick start](#quick-start)  
-  - [Prerequisites](#prerequisites)  
-  - [Install & configure](#install--configure)  
-  - [Run tests](#run-tests)  
-- [Environment variables](#environment-variables)  
-- [Available scripts](#available-scripts)  
-- [Repository structure](#repository-structure)  
-- [Test strategy (summary)](#test-strategy-summary)  
-- [Authentication approach](#authentication-approach)  
-- [Reporting, observability & CI recommendations](#reporting-observability--ci-recommendations)  
-- [Troubleshooting](#troubleshooting)  
-- [Contributing](#contributing)  
-- [Contact & License](#contact--license)
+Contents
+- Overview
+- Key features
+- Tech stack
+- Quick start
+  - Prerequisites
+  - Install & configure
+  - Run tests
+- Environment variables
+- Scripts
+- Repo layout
+- Test strategy (summary)
+- Authentication approach
+- CI & reporting guidance
+- Troubleshooting
+- Contributing
+- Contact & License
 
 ---
 
 ## Overview
 
-This project prioritizes API automation (fast, deterministic) with a minimal set of UI E2E smoke tests to validate end-to-end behavior. Tests are implemented in TypeScript using Playwright so API and UI tests can run under the same runner and reporting tools.
+This project demonstrates an API-first testing approach using Playwright in TypeScript. API tests exercise the critical, deterministic checkout paths (order creation, payment processing, status transitions and receipt verification). UI E2E tests are intentionally limited to smoke/regression checks to validate the end-to-end flow and surface integration issues.
+
+Aim: fast, reliable tests that provide quick feedback on high-risk, revenue-impacting functionality.
 
 ---
 
-## Scope
+## Key features
 
-### In scope
-- User authentication and session handling  
-- Order creation (items, quantities, totals)  
-- Payment processing (card and mobile money)  
-- Order status transitions (CREATED → PAID)  
-- Receipt generation and validation  
-- API contract validation and data consistency  
-- Basic reliability and error handling checks
-
-### Out of scope
-- Full product catalog browsing and discovery  
-- Fulfillment, shipping, and post-purchase workflows  
-- Third-party payment provider certification  
-- Deep security or penetration testing  
-- Full UI regression coverage
+- API-first test coverage for happy paths and critical negative cases
+- Minimal UI smoke tests for end-to-end verification
+- Playwright HTML reports with traces/screenshots for failures
+- Environment-driven configuration for running tests against different environments
+- Guidance for CI (GitHub Actions recommended) and artifact persistence
 
 ---
 
 ## Tech stack
 
-- Test runner: Playwright (API + UI capabilities)  
-- Language: TypeScript  
-- Environment config: dotenv (automation/config/env.local)  
-- Reporting: Playwright HTML reports (reports/test-run-results/)  
-- CI: Any modern CI (GitHub Actions recommended)
+- Test runner: Playwright (API + UI)
+- Language: TypeScript
+- Env config: dotenv (automation/config/env.local)
+- Reporting: Playwright HTML reports (reports/test-run-results/)
+- CI: GitHub Actions
 
 ---
 
 ## Quick start
 
 ### Prerequisites
-- Node.js (16+ recommended)  
-- npm or yarn  
-- A running test backend (set `API_BASE_URL` accordingly)
+- Node.js v16+ (LTS recommended)
+- npm or yarn
 
-### Install & configure
-1. Install dependencies:
+
+### Install
 ```bash
 npm install
 ```
 
-2. Copy environment template and edit:
+### Configure environment
+Copy the env template and set required variables:
 ```bash
 cp automation/config/env.example automation/config/env.local
-# Edit automation/config/env.local and set required variables:
-# API_BASE_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, etc.
+# Edit automation/config/env.local and set:
+# UI_BASE_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, USE_FAKE_AUTH=true.
+```
+
+Minimum required in automation/config/env.local:
+```env
+API_BASE_URL=https://api.example.test
+TEST_USER_EMAIL=test@example.com
+TEST_USER_PASSWORD=supersecret
+# Optional:
+# AUTH_TOKEN=eyJ...   # when you want to inject a pre-provisioned token
+# UI_BASE_URL=https://app.example.test
 ```
 
 ### Run tests
-- Run API tests:
+- Run API tests (fast):
 ```bash
 npm run test:api
 ```
@@ -100,35 +99,45 @@ npm run test:api
 ```bash
 npm run test:ui
 ```
-- Run all tests:
+- Run the full suite:
 ```bash
 npm run test:all
 ```
 - Open the latest HTML report:
 ```bash
 npm run report
+# or
+npx playwright show-report reports/test-run-results
+```
+
+Run a single API test file:
+```bash
+npx playwright test automation/api/tests/my-test.spec.ts --project=api
+```
+
+Run with verbose Playwright API logs:
+```bash
+DEBUG=pw:api npm run test:api
 ```
 
 ---
 
-## Environment variables
+## Environment variables (summary)
 
-Place local variables in `automation/config/env.local` (gitignored). Minimum required:
-```env
-API_BASE_URL=https://api.example.test
-TEST_USER_EMAIL=test@example.com
-TEST_USER_PASSWORD=supersecret
-```
+Place local variables in `automation/config/env.local` (this file is gitignored). Example variables:
 
-Optional:
-- `AUTH_TOKEN` — pre-provisioned token (fallback)
-- `UI_BASE_URL` — base URL for UI smoke tests
+- UI_BASE_URL (required) — base URL for UI smoke tests
+- TEST_USER_EMAIL (required) — test account email
+- TEST_USER_PASSWORD (required) — test account password
+- AUTH_TOKEN (optional/mocked instead) — pre-provisioned token (fallback)
+- API_BASE_URL (optional/mocked instead) — base URL for API tests
+
 
 ---
 
 ## Available scripts (package.json)
 
-Example commands:
+Example scripts — ensure these match your package.json:
 ```json
 {
   "test:api": "playwright test --project=api",
@@ -138,29 +147,26 @@ Example commands:
 }
 ```
 
-Adjust script names to match your `package.json` if different.
-
 ---
 
 ## Repository structure
 
 - automation/
-  - api/
-  - helpers/ — API client, auth helpers
-  - tests/ — API tests (order creation, payment, receipt)
-  - config/
-    - env.example
-    - env.local (gitignored)
-  - ui/
-    - tests/ — UI E2E smoke tests (planned)
-    - helpers/
+  - api/                - API
+    - helpers/            
+    - tests/              
+  - ui/                 — UI
+    - helpers/            
+    - tests/
+    - mock-app/             
 - test-plan/
   - test-strategy.md
   - test-cases.md
 - triage/
   - flaky-test-analysis.md
+  - flake-triage-checklist.md
 - reports/
-  - test-run-results/ (Playwright HTML reports)
+  - test-run-results/   — Playwright HTML reports and artifacts
 - playwright.config.ts
 - tsconfig.json
 - package.json
@@ -170,44 +176,45 @@ Adjust script names to match your `package.json` if different.
 
 ## Test strategy (summary)
 
-- Risk-based: prioritize flows that impact revenue and user trust (authentication, payment, receipts).  
-- API-first: faster feedback and higher reliability than UI-heavy suites
-- Automate high-value, deterministic API scenarios first (happy path + critical negative cases).  
-- Prefer API-first tests for speed and reliability; reserve UI for smoke/regression where necessary.  
-- Use idempotent operations and unique test data to avoid cross-test interference.  
-- Quarantine flaky tests and track them in `triage/flaky-test-analysis.md`.
+- Risk-based: prioritize flows impacting revenue and trust — auth, payment, receipts.
+- API-first: execute core logic through API tests for speed and determinism.
+- Automate high-value, deterministic scenarios first (happy path + critical negatives).
+- Use UI only for smoke/regression that can't be validated via API.
+- Use idempotent operations or unique test data to avoid cross-test interference.
+- Track flaky tests in `triage/flaky-test-analysis.md` and quarantine when needed.
 
 ---
 
 ## Authentication approach
 
 Primary:
-1. Login via API using `TEST_USER_EMAIL` and `TEST_USER_PASSWORD` to obtain a token (preferred).
+- Obtain a token by logging in via API using `TEST_USER_EMAIL` and `TEST_USER_PASSWORD`.
 
 Fallback:
-2. Use `AUTH_TOKEN` when interactive/MFA login prevents full automation.
+- Use `AUTH_TOKEN` for cases where interactive login / MFA blocks automation.
 
-Implementation: `automation/api/helpers/auth.ts`
+Implementation is in `automation/helpers/auth.ts` (or `automation/api/helpers/auth.ts`).
 
 ---
 
-## Reporting, observability & CI recommendations
+## CI & reporting recommendations
 
-- Save Playwright HTML reports under `reports/test-run-results/`.  
-- Persist traces/screenshots for failures to speed triage.  
-- Run API tests on every PR (fast). Run UI smoke tests on merge or nightly.  
-- Do not let flaky/unstable tests block merges — quarantine and triage them.  
-- Store artifacts (reports, traces) in CI for debugging.
+- Run API tests on every PR for fast feedback.
+- Run UI smoke tests on merge/main or on a nightly schedule.
+- Persist Playwright reports, screenshots, traces, and logs as CI artifacts.
+- Use Playwright trace and video capture on failure to speed triage.
+- Do not allow flaky tests to block merges — quarantine and create issues to fix root causes.
+
 
 ---
 
 ## Troubleshooting
 
-- Authentication failures: verify `API_BASE_URL`, `TEST_USER_EMAIL`, and `TEST_USER_PASSWORD`.  
-- Intermittent failures: re-run with Playwright trace enabled and attach traces to issues.  
-- Missing env vars: compare `automation/config/env.local` with `automation/config/env.example`.
-
-Enable verbose Playwright logs for deeper debugging:
+- Authentication failures: confirm UI_BASE_URL and test account credentials.
+- Intermittent failures: enable Playwright tracing and attach traces to issues:
+  - Set `PWDEBUG=1` or configure trace options in `playwright.config.ts`.
+- Missing env vars: compare `automation/config/env.local` to `automation/config/env.example`.
+- Increase log verbosity:
 ```bash
 DEBUG=pw:api npm run test:api
 ```
@@ -216,9 +223,10 @@ DEBUG=pw:api npm run test:api
 
 ## Contributing
 
-- File issues for failing tests, missing coverage, or flaky behavior.  
-- Follow the test strategy: prefer API-first, deterministic tests, and document trade-offs.  
-- Update `test-plan/test-cases.md` when adding or changing tests.  
+- Open issues for failing tests, flaky behavior, or missing coverage.
+- Follow the test strategy: prefer API-first, deterministic tests and document trade-offs.
+- Update `test-plan/test-cases.md` when adding or changing tests.
 - Add tests under `automation/api/tests` (API) or `automation/ui/tests` (UI smoke).
+- Document any external test data or test account provisioning steps.
 
 ---
