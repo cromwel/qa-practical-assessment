@@ -78,7 +78,7 @@ README.md
   Defines quality goals, risks, test approach, automation priorities, and trade-offs.
 
 - **Test Cases:** `test-plan/test-cases.md`  
-  Contains 10–15 risk-based test cases covering:
+  Contains 15 risk-based test cases covering:
   - Happy paths
   - Negative scenarios
   - Edge cases
