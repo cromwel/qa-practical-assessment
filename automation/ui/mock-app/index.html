@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Mock Shop</title>
+    <style>
+      body { font-family: sans-serif; padding: 24px; }
+      .hidden { display: none; }
+    </style>
+  </head>
+  <body>
+    <h1>Mock UI</h1>
+
+    <section id="login">
+      <h2>Login</h2>
+      <input data-testid="email" placeholder="email" />
+      <input data-testid="password" placeholder="password" type="password" />
+      <button data-testid="login-submit">Login</button>
+    </section>
+
+    <section id="dashboard" class="hidden">
+      <h2>Dashboard</h2>
+      <button data-testid="add-item">Add item</button>
+      <input data-testid="quantity" value="1" />
+      <button data-testid="checkout">Checkout</button>
+      <button data-testid="pay">Pay</button>
+
+      <div data-testid="payment-success" class="hidden">Payment successful</div>
+      <div data-testid="order-status" class="hidden">PAID</div>
+      <a data-testid="receipt-link" class="hidden" href="#receipt">View receipt</a>
+    </section>
+
+    <script>
+      const $ = (sel) => document.querySelector(sel);
+
+      $('[data-testid="login-submit"]').addEventListener('click', () => {
+        $('#login').classList.add('hidden');
+        $('#dashboard').classList.remove('hidden');
+        history.pushState({}, '', '/dashboard');
+      });
+
+      $('[data-testid="pay"]').addEventListener('click', () => {
+        $('[data-testid="payment-success"]').classList.remove('hidden');
+        $('[data-testid="order-status"]').classList.remove('hidden');
+        $('[data-testid="receipt-link"]').classList.remove('hidden');
+      });
+    </script>
+  </body>
+</html>

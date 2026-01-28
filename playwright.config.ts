@@ -10,10 +10,15 @@ export default defineConfig({
     ['html', { outputFolder: 'reports/test-run-results/html', open: 'never' }]
   ],
   use: {
-    baseURL: process.env.API_BASE_URL,
+    baseURL: process.env.UI_BASE_URL,
     extraHTTPHeaders: {
       'Content-Type': 'application/json'
     }
+  },
+  webServer: {
+    command: 'npx http-server automation/ui/mock-app -p 4173',
+    url: process.env.UI_BASE_URL,
+    reuseExistingServer: !process.env.CI,
   },
   timeout: 60_000
 });

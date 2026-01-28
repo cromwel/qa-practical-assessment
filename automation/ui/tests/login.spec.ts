@@ -3,7 +3,7 @@ import { selectors } from '../helpers/selectors';
 import { testUser } from '../helpers/test-data';
 
 test('UI: user can log in successfully', async ({ page }) => {
-  await page.goto('/login', { waitUntil: 'domcontentloaded' });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
 
   const email = page.locator(selectors.login.email);
   const password = page.locator(selectors.login.password);

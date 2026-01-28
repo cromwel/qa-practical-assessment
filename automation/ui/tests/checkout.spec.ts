@@ -5,7 +5,10 @@ import { testUser } from '../helpers/test-data';
 test.describe('UI: checkout E2E smoke', () => {
   test('user can complete checkout and see PAID status', async ({ page }) => {
     // Login
-    await page.goto('/login', { waitUntil: 'domcontentloaded' });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    console.log('URL after goto:', page.url());
+    console.log('Title:', await page.title());
+    await page.screenshot({ path: 'debug-login.png', fullPage: true });
 
     const email = page.locator(selectors.login.email);
     const password = page.locator(selectors.login.password);
