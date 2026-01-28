@@ -70,6 +70,10 @@ Aim: fast, reliable tests that provide quick feedback on high-risk, revenue-impa
 ### Install
 ```bash
 npm install
+npm init -y
+npm i -D @playwright/test typescript ts-node dotenv
+npx playwright install
+
 ```
 
 ### Configure environment
