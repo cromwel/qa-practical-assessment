@@ -1,25 +1,27 @@
 import { APIRequestContext, expect } from '@playwright/test';
 
+/**
+ * Supported login response shapes.
+ * Some auth services return `token`, others `access_token`.
+ */
 type LoginResponse = {
   token?: string;
   access_token?: string;
 };
 
 export async function getAuthHeader(request: APIRequestContext): Promise<Record<string, string>> {
- 
-  // Login via API to obtain token 
+// Preferred: authenticate via login endpoint for reproducible CI runs.
+// Fallback: using AUTH_TOKEN if the environment cannot support automated login
+
   const email = process.env.TEST_USER_EMAIL;
   const password = process.env.TEST_USER_PASSWORD;
-
-  if (!email || !password) {
-    throw new Error('Missing TEST_USER_EMAIL / TEST_USER_PASSWORD in env. Set them in automation/config/env.local');
-  }
-
+//log in via API
+  if (email || password) {
   const res = await request.post('/auth/login', {
     data: { email, password }
   });
 
-  expect(res.ok(), 'Login failed - check credentials and /auth/login endpoint').toBeTruthy();
+  expect(res.ok(), 'Login failed, check credentials and /auth/login endpoint').toBeTruthy();
 
   const body = (await res.json()) as LoginResponse;
   const token = body.token || body.access_token;
@@ -29,4 +31,15 @@ export async function getAuthHeader(request: APIRequestContext): Promise<Record<
   }
 
   return { Authorization: `Bearer ${token}` };
+}
+
+// Token is pre-provisioned/failed API log in
+if (process.env.AUTH_TOKEN) {
+    return { Authorization: `Bearer ${process.env.AUTH_TOKEN}` };
+  }
+  // 3) Fail fast if neither method is configured
+  throw new Error(
+    'No authentication method configured. Set TEST_USER_EMAIL and TEST_USER_PASSWORD (preferred), ' +
+      'or set AUTH_TOKEN as a fallback.'
+  );
 }
