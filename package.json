@@ -1,0 +1,32 @@
+{
+  "name": "qa-practical-assessment",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test:api": "npx playwright test automation/api/tests",
+    "test:api:headed": "npx playwright test automation/api/tests --headed",
+    "test:ui": "npx playwright test automation/ui/tests",
+    "test:all": "npx playwright test",
+    "report": "npx playwright show-report reports/test-run-results/html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cromwel/qa-practical-assessment.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/cromwel/qa-practical-assessment/issues"
+  },
+  "homepage": "https://github.com/cromwel/qa-practical-assessment#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.0",
+    "@types/node": "^25.0.10",
+    "dotenv": "^17.2.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
