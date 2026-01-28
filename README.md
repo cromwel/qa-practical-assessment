@@ -171,6 +171,7 @@ Adjust script names to match your `package.json` if different.
 ## Test strategy (summary)
 
 - Risk-based: prioritize flows that impact revenue and user trust (authentication, payment, receipts).  
+- API-first: faster feedback and higher reliability than UI-heavy suites
 - Automate high-value, deterministic API scenarios first (happy path + critical negative cases).  
 - Prefer API-first tests for speed and reliability; reserve UI for smoke/regression where necessary.  
 - Use idempotent operations and unique test data to avoid cross-test interference.  
